@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GST Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 70px;
+      
+    }
+    
+    h1 {
+      text-align: center;
+      background-color:#b6ccf0;
+    }
+    
+    form {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    select, input[type="text"], textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    
+    select:focus, input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 5px #007bff;
+    }
+    
+    input[type="submit"], input[type="button"] {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    
+    input[type="submit"] {
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+    }
+    
+    input[type="submit"]:hover {
+      background-color: #218838;
+    }
+    
+    input[type="button"] {
+      background-color: #dc3545;
+      color: #fff;
+      border: none;
+    }
+    
+    input[type="button"]:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <h1>GST Page</h1>
+  
+  <form>
+    <label for="state">Select State:</label>
+    <select id="state" name="state">
+      <option value="Andhra Pradesh">Andhra Pradesh</option>
+      <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+      <!-- Add more options for other Indian states -->
+    </select>
+    <br><br>
+    
+    <label for="entity-name">Entity Name:</label>
+    <input type="text" id="entity-name" name="entity-name">
+    <br><br>
+    
+    <label for="gstin">GSTIN:</label>
+    <input type="text" id="gstin" name="gstin">
+    <br><br>
+    
+    <label for="address">Address:</label>
+    <textarea id="address" name="address" rows="4" cols="50"></textarea>
+    <br><br>
+    
+    <label for="pincode">Pincode:</label>
+    <input type="text" id="pincode" name="pincode">
+    <br><br>
+    
+    <input type="submit" value="Save">
+    <input type="button" value="Cancel">
+  </form>
