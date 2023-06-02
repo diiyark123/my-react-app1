@@ -68,6 +68,8 @@ export default function FormDialog() {
     },
   ]);
 
+  const [isFieldsEmpty, setIsFieldsEmpty] = useState(false);
+
   const columns = [
     { field: 'Entity Name', headerName: 'Entity Name', width: 100 },
     { field: 'State', headerName: 'State', width: 100 },
@@ -92,8 +94,8 @@ export default function FormDialog() {
               entityName: rowData['Entity Name'],
               gstin: rowData.GSTIN,
               pincode: rowData.Pincode,
-              address1: rowData['Address 1'], // Update the address1 field
-      address2: rowData['Address 2'],
+              address1: rowData.Address,
+              address2: '', // Assuming there is no address2 in the row data
             });
             setEditingRowIndex(rowIndex); // Add this line to store the index of the editing row
           }
@@ -107,8 +109,7 @@ export default function FormDialog() {
             setRows(updatedRows);
           }
         };
-        
-        
+
 
         
         return (
@@ -144,7 +145,7 @@ export default function FormDialog() {
   const handleInputChange = (event) => {
     const { id, value } = event.target;
   
-    if (id === 'pincode' &&!/^\d+$/.test(value)) {
+    if (id === 'pincode' &&  !/^\d+$/.test(value)) {
       event.preventDefault();
       event.stopPropagation();
       event.target.value = formData.pincode; // Revert the input value to the previous pincode value
@@ -156,6 +157,11 @@ export default function FormDialog() {
     }
   };
   const handleSave = () => {
+    if (!formData.state || !formData.entityName || !formData.gstin || !formData.pincode || !formData.address1 || !formData.address2) {
+      setIsFieldsEmpty(true);
+    } else {
+
+
     if (editingRowIndex !== null) {
       const updatedRows = [...rows];
       updatedRows[editingRowIndex] = {
@@ -193,6 +199,8 @@ export default function FormDialog() {
       address1: '',
       address2: '',
     });
+    setIsFieldsEmpty(false);
+  }
   };
   
 
@@ -256,6 +264,7 @@ export default function FormDialog() {
               value={formData.state}
               onChange={handleStateChange}
               required // Added required attribute
+              error={isFieldsEmpty && !formData.state }
               SelectProps={{
                 MenuProps: {
                   PaperProps: {
@@ -285,6 +294,16 @@ export default function FormDialog() {
               value={formData.entityName}
               onChange={handleInputChange}
               required // Added required attribute
+              error={isFieldsEmpty&& !formData.entityName}
+               SelectProps={{
+    MenuProps: {
+      PaperProps: {
+        style: {
+          maxHeight: '415px', // Adjust the maximum height of the dropdown menu
+        },
+      },
+    },
+  }}
             />
             <TextField
               margin="dense"
@@ -296,6 +315,7 @@ export default function FormDialog() {
               value={formData.gstin}
               onChange={handleInputChange}
               required // Added required attribute
+              error={isFieldsEmpty && !formData.gstin}
             />
             <TextField
               margin="dense"
@@ -309,6 +329,7 @@ export default function FormDialog() {
               value={formData.pincode}
               onChange={handleInputChange}
               required // Added required attribute
+              error={isFieldsEmpty && !formData.pincode}
             />
             <TextField
               margin="dense"
@@ -320,18 +341,25 @@ export default function FormDialog() {
               value={formData.address1}
               onChange={handleInputChange}
               required // Added required attribute
+              error={isFieldsEmpty && !formData.address1 }
             />
             <TextField
               margin="dense"
               id="address2"
-              label="Addressline 2"
+              label="Address 2"
               type="text"
               fullWidth
               variant="outlined"
               value={formData.address2}
               onChange={handleInputChange}
               required // Added required attribute
+              error={isFieldsEmpty && !formData.address2}
             />
+            {isFieldsEmpty && !formData.address2 && (
+  <Typography variant="body2" color="error" align="center">
+    All fields are mandatory
+  </Typography>
+)}
           </Box>
         </DialogContent>
         <DialogActions>
@@ -388,5 +416,4 @@ export default function FormDialog() {
         message="Invoice saved!"
       />
     </div>
-  );
-}
+  );}
