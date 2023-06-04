@@ -30,7 +30,7 @@ export default function Login() {
       // handleSignInClick(false);
       setIsSignUpMode(false);
       
-      axios.post('http://localhost:3000/api/hbsendmail/',{"mailid":"travedesk@gmail.com"})
+      axios.post('http://localhost:3000/api/sendmail/',{"mailid":"travedesk@gmail.com"})
       .then(response => console.log(response))
       .catch(err => console.log(err))
 
