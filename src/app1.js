@@ -99,6 +99,8 @@ export default function FormDialog() {
           }
         };
         
+        
+
 
         const handleDelete = () => {
           const confirmDelete = window.confirm("Are you sure you want to delete?");
@@ -152,10 +154,95 @@ export default function FormDialog() {
       setFormData((prevData) => ({
         ...prevData,
         [id]: value,
+        [`${id}Error`]: '',
       }));
     }
   };
   const handleSave = () => {
+    let hasError = false;
+
+    if (!formData.state) {
+      setFormData((prevData) => ({
+        ...prevData,
+        stateError: "State is mandatory",
+      }));
+      hasError = true;
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        stateError: "",
+      }));
+    }
+  if (!formData.entityName) {
+    setFormData((prevData) => ({
+      ...prevData,
+      entityNameError: "Entity-Name is mandatory",
+    }));
+    hasError = true;
+  } else {
+    setFormData((prevData) => ({
+      ...prevData,
+      entityNameError: "",
+    }));
+  }
+
+  if (!formData.gstin) {
+  setFormData((prevData) => ({
+    ...prevData,
+    gstError: "GSTIN is mandatory",
+  }));
+  hasError = true; 
+}else {
+  setFormData((prevData) => ({
+    ...prevData,
+    gstError: "",
+  }));
+}
+
+if (!formData.pincode) {
+  setFormData((prevData) => ({
+    ...prevData,
+    pinError: "Pincode is mandatory",
+  }));
+  hasError = true; 
+}else {
+  setFormData((prevData) => ({
+    ...prevData,
+    pinError: "",
+  }));
+}
+
+if (!formData.address1) {
+  setFormData((prevData) => ({
+    ...prevData,
+    add1Error: "Address 1 is mandatory",
+  }));
+  hasError = true; 
+}else {
+  setFormData((prevData) => ({
+    ...prevData,
+    add1Error: "",
+  }));
+}
+
+if (!formData.address2) {
+  setFormData((prevData) => ({
+    ...prevData,
+    add2Error: "Address 2 is mandatory",
+  }));
+  hasError = true; 
+}else {
+  setFormData((prevData) => ({
+    ...prevData,
+    add2Error: "",
+  }));
+}
+   
+    if (hasError) {
+      return;
+    }
+
+
     if (editingRowIndex !== null) {
       const updatedRows = [...rows];
       updatedRows[editingRowIndex] = {
@@ -256,6 +343,8 @@ export default function FormDialog() {
               value={formData.state}
               onChange={handleStateChange}
               required // Added required attribute
+              error={!!formData.stateError} // Set the error prop based on the error state
+              helperText={formData.stateError}
               SelectProps={{
                 MenuProps: {
                   PaperProps: {
@@ -285,6 +374,8 @@ export default function FormDialog() {
               value={formData.entityName}
               onChange={handleInputChange}
               required // Added required attribute
+              error={!!formData.entityNameError} // Set the error prop based on the error state
+  helperText={formData.entityNameError}
             />
             <TextField
               margin="dense"
@@ -296,6 +387,8 @@ export default function FormDialog() {
               value={formData.gstin}
               onChange={handleInputChange}
               required // Added required attribute
+              error={!!formData.gstError} // Set the error prop based on the error state
+  helperText={formData.gstError}
             />
             <TextField
               margin="dense"
@@ -309,6 +402,8 @@ export default function FormDialog() {
               value={formData.pincode}
               onChange={handleInputChange}
               required // Added required attribute
+              error={!!formData.pinError} // Set the error prop based on the error state
+              helperText={formData.pinError}
             />
             <TextField
               margin="dense"
@@ -320,6 +415,8 @@ export default function FormDialog() {
               value={formData.address1}
               onChange={handleInputChange}
               required // Added required attribute
+              error={!!formData.add1Error} // Set the error prop based on the error state
+              helperText={formData.add1Error}
             />
             <TextField
               margin="dense"
@@ -331,6 +428,8 @@ export default function FormDialog() {
               value={formData.address2}
               onChange={handleInputChange}
               required // Added required attribute
+              error={!!formData.add2Error} // Set the error prop based on the error state
+              helperText={formData.add2Error}
             />
           </Box>
         </DialogContent>
