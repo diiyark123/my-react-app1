@@ -1,491 +1,233 @@
-import './style.css';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
-import { DataGrid } from '@mui/x-data-grid';
-import Typography from '@mui/material/Typography';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { styled } from '@mui/system';
-import axios from 'axios';
-import React, { useState, useEffect } from 'react';
-import { Snackbar } from '@mui/material';
-
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
- 
-
-const StyledDataGrid = styled(DataGrid)`
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1); /* Add box shadow effect */
-  margin-bottom: 15px; /* Increase spacing between the table and other elements */
-  border: 1px solid rgba(224, 224, 224, 1); /* Add border to the table */
-  border-radius: 4px; /* Add border radius to the table */
-`;
-
-export default function FormDialog() {
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    state: '',
-    entityName: '',
-    gstin: '',
-    pincode: '',
-    address1: '',
-    address2: '',
-  });
-  const [rows, setRows] = useState([
-    {
-      id: 1,
-      'Entity Name': 'Company A',
-      State: 'State A',
-      GSTIN: 'GSTIN A',
-      'Address 1': 'Address 1 A',
-    'Address 2': 'Address 2 A',
-      Pincode: 'Pincode A',
-
-    },
-    {
-      id: 2,
-      'Entity Name': 'Company B',
-      State: 'State B',
-      GSTIN: 'GSTIN B',
-      'Address 1': 'Address 1 B',
-    'Address 2': 'Address 2 B',
-      Pincode: 'Pincode B',
-    },
-    {
-      id: 3,
-      'Entity Name': 'Company C',
-      State: 'State C',
-      GSTIN: 'GSTIN C',
-      'Address 1': 'Address 1 C',
-    'Address 2': 'Address 2 C',
-      Pincode: 'Pincode C',
-    },
-  ]);
-
-  const columns = [
-    { field: 'Entity Name', headerName: 'Entity Name', width: 100 },
-    { field: 'State', headerName: 'State', width: 100 },
-    { field: 'GSTIN', headerName: 'GSTIN', width: 100 },
-    { field: 'Address 1', headerName: 'Address 1', width: 100 },
-    { field: 'Address 2', headerName: 'Address 2', width: 100 },
-    { field: 'Pincode', headerName: 'Pincode', width: 110 },
-    
-    {
-      field: 'action',
-      headerName: 'Action',
-      width: 100,
-      renderCell: (params) => {
-        const handleEdit = () => {
-          const rowIndex = rows.findIndex((row) => row.id === params.row.id);
-          if (rowIndex !== -1) {
-            // Retrieve the row data
-            const rowData = rows[rowIndex];
-            setOpen(true);
-            setFormData({
-              state: rowData.State,
-              entityName: rowData['Entity Name'],
-              gstin: rowData.GSTIN,
-              pincode: rowData.Pincode,
-              address1: rowData.Address,
-              address2: '', // Assuming there is no address2 in the row data
-            });
-            setEditingRowIndex(rowIndex); // Add this line to store the index of the editing row
-          }
-        };
-        
-        
+import React, { useState,useRef,useEffect } from 'react';
+import { Typography, Button, Grid, Paper,LinearProgress } from '@mui/material';
+import { color } from '@mui/material/colors';
+import {
+  Container,
+  Card,
+  CardContent,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Box,
+  IconButton,
+} from '@mui/material';
+import Chart from 'chart.js/auto';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import EventIcon from '@mui/icons-material/Event';
+import Menu from '@mui/material/Menu';
+import Popover from '@mui/material/Popover';
 
 
-        const handleDelete = () => {
-          const confirmDelete = window.confirm("Are you sure you want to delete?");
-          if (confirmDelete) {
-            const updatedRows = rows.filter((row) => row.id !== params.row.id);
-            setRows(updatedRows);
-          }
-        };
-        
-        
-
-        
-        return (
-          <div>
-            <Button onClick={handleEdit} startIcon={<EditIcon />} size="small">
-            
-            </Button>
-            <Button
-              onClick={handleDelete}
-              startIcon={<DeleteIcon />}
-              size="small"
-              color="error"
-            >
-              Delete
-            </Button>
-          </div>
-        );
-      },
-    },
-  
-  ];
-  
-  
-  const [editingRowIndex, setEditingRowIndex] = useState(null);
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleInputChange = (event) => {
-    const { id, value } = event.target;
-  
-    if (id === 'pincode' && isNaN(value)) {
-      event.preventDefault();
-      event.stopPropagation();
-      event.target.value = formData.pincode; // Revert the input value to the previous pincode value
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [id]: value,
-        [`${id}Error`]: '',
-      }));
-    }
-  };
-  const handleSave = () => {
-    let hasError = false;
-
-    if (!formData.state) {
-      setFormData((prevData) => ({
-        ...prevData,
-        stateError: "State is mandatory",
-      }));
-      hasError = true;
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        stateError: "",
-      }));
-    }
-  if (!formData.entityName) {
-    setFormData((prevData) => ({
-      ...prevData,
-      entityNameError: "Entity-Name is mandatory",
-    }));
-    hasError = true;
-  } else {
-    setFormData((prevData) => ({
-      ...prevData,
-      entityNameError: "",
-    }));
-  }
-
-  if (!formData.gstin) {
-  setFormData((prevData) => ({
-    ...prevData,
-    gstError: "GSTIN is mandatory",
-  }));
-  hasError = true; 
-}else {
-  setFormData((prevData) => ({
-    ...prevData,
-    gstError: "",
-  }));
-}
-
-if (!formData.pincode) {
-  setFormData((prevData) => ({
-    ...prevData,
-    pinError: "Pincode is mandatory",
-  }));
-  hasError = true; 
-}else {
-  setFormData((prevData) => ({
-    ...prevData,
-    pinError: "",
-  }));
-}
-
-if (!formData.address1) {
-  setFormData((prevData) => ({
-    ...prevData,
-    add1Error: "Address 1 is mandatory",
-  }));
-  hasError = true; 
-}else {
-  setFormData((prevData) => ({
-    ...prevData,
-    add1Error: "",
-  }));
-}
-
-if (!formData.address2) {
-  setFormData((prevData) => ({
-    ...prevData,
-    add2Error: "Address 2 is mandatory",
-  }));
-  hasError = true; 
-}else {
-  setFormData((prevData) => ({
-    ...prevData,
-    add2Error: "",
-  }));
-}
-   
-    if (hasError) {
-      return;
-    }
-
-
-    if (editingRowIndex !== null) {
-      const updatedRows = [...rows];
-      updatedRows[editingRowIndex] = {
-        id: rows[editingRowIndex].id,
-        'Entity Name': formData.entityName,
-        State: formData.state,
-        GSTIN: formData.gstin,
-        'Address 1': formData.address1,
-      'Address 2': formData.address2,
-        Pincode: formData.pincode,
-      };
-      setRows(updatedRows);
-      setEditingRowIndex(null); // Reset the editing row index
-    } else {
-      const newId = rows.length + 1;
-      const newRow = {
-        id: newId,
-        'Entity Name': formData.entityName,
-        State: formData.state,
-        GSTIN: formData.gstin,
-        'Address 1': formData.address1,
-        'Address 2': formData.address2,
-        Pincode: formData.pincode,
-      };
-      setRows((prevRows) => [...prevRows, newRow]);
-    }
-  
-    setOpen(false);
-    handleSnackbarOpen();
-    setFormData({
-      state: '',
-      entityName: '',
-      gstin: '',
-      pincode: '',
-      address1: '',
-      address2: '',
-    });
-  };
-  
-
-  const [indianStates, setIndianStates] = useState([]);
-
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-
-  const handleSnackbarOpen = () => {
-    setSnackbarOpen(true);
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
+const InsightsDashboard = () => {
+  const chartRef = useRef(null);
+  const barChartRef = useRef(null);
 
   useEffect(() => {
-    axios.post('http://localhost:3000/api/hbstateselect/')
-      .then((response) => {
-        console.log(response.status, response.data);
-         setIndianStates(response.data);
-      })
-      .catch((error) => {
-        console.error('Error fetching Indian states:', error);
+    if (chartRef.current && barChartRef.current) {
+      const chartData = {
+        labels: ['New York', 'Los Angeles', 'Chicago'],
+        datasets: [
+          {
+            label: 'Total Spend',
+            data: [50000, 45000, 30000],
+            backgroundColor: ['#5745f7', '#7869ff', '#9684fd'],
+          },
+        ],
+      };
+
+      const chartOptions = {
+        responsive: true,
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 10000,
+            },
+          },
+        },
+      };
+
+      new Chart(chartRef.current, {
+        type: 'doughnut',
+        data: chartData,
+        options: chartOptions,
       });
+
+      new Chart(barChartRef.current, {
+        type: 'bar',
+        data: chartData,
+        options: chartOptions,
+      });
+    }
   }, []);
 
-  
+  const [selectedDate, setSelectedDate] = useState(null);
+  const datePickerRef = useRef(null);
 
-  const handleStateChange = (event) => {
-    const { value } = event.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      state: value,
-    }));
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
   };
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleCalendarButtonClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleFieldSelect = (field) => {
+    // Handle the selected field
+    console.log(field);
+    setAnchorEl(null);
+  };
+  
 
   return (
     <div>
-      <Typography variant="h4" component="h1" align="center" gutterBottom>
-        GST
-      </Typography>
-    <div style={{ position: 'relative' }}>
-      <Button variant="outlined" id="agst" onClick={handleClickOpen}
-      style={{ position: 'absolute', top: '-75px', right: '20px' }}>
-        Add GST
-      </Button>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Add GST</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Please enter the following information to add GST:
-          </DialogContentText>
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <TextField
-              select
-              margin="dense"
-              id="state"
-              label="State"
-              fullWidth
-              variant="outlined"
-              value={formData.state}
-              onChange={handleStateChange}
-              required // Added required attribute
-              error={!!formData.stateError} // Set the error prop based on the error state
-              helperText={formData.stateError}
-              SelectProps={{
-                MenuProps: {
-                  PaperProps: {
-                    style: {
-                      maxHeight: '415px', // Adjust the maximum height of the dropdown menu
-                    },
+      
+        <div className="left-section">  
+        <Grid container alignItems="center" justifyContent="space-between" sx={{ padding: '2rem' }}>
+          <div>
+         <Typography variant="h4" sx={{ marginBottom: '1rem' }}>Welcome</Typography>
+         <Typography variant="h6" sx={{ marginBottom: '1rem',color:'#525252' }}>Here's an overview of your Business Insights and Performance Dashboard</Typography> 
+         </div> 
+         <div>
+          <Button variant="contained"  sx={{ color: 'white', backgroundColor: '#5745f7','&:hover': {
+                  
+                    backgroundColor: '#7869ff',
+                    
                   },
-                },
+                  marginTop: '-3.8rem' 
+                }}
+                onClick={handleCalendarButtonClick}>Calendar</Button>
+                
+                 <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
               }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              getContentAnchorEl={null}
+              sx={{ height:'300px',minWidth: '200px', width: '300px' }}
+            >
+              <MenuItem onClick={() => handleFieldSelect('Field 1')}> 30 days</MenuItem>
+              <MenuItem onClick={() => handleFieldSelect('Field 2')}>15 days</MenuItem>
+              <MenuItem onClick={() => handleFieldSelect('Field 3')}>7 days</MenuItem>
+              <MenuItem onClick={() => handleFieldSelect('Field 4')}>Custom</MenuItem>
               
-            >
-                        
-    {indianStates.map((state,i) => (
-       <MenuItem key={i} value={state.StateName}>
-       {state.StateName}
-     </MenuItem>
-   ))}
-              
-            </TextField>
-            <TextField
-              margin="dense"
-              id="entityName"
-              label="Entity Name"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={formData.entityName}
-              onChange={handleInputChange}
-              required // Added required attribute
-              error={!!formData.entityNameError} // Set the error prop based on the error state
-  helperText={formData.entityNameError}
-            />
-            <TextField
-              margin="dense"
-              id="gstin"
-              label="GSTIN"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={formData.gstin}
-              onChange={handleInputChange}
-              required // Added required attribute
-              error={!!formData.gstError} // Set the error prop based on the error state
-  helperText={formData.gstError}
-            />
-            <TextField
-              margin="dense"
-              id="pincode"
-              label="Pincode"
-              type="number"
-              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} // Specify numeric input pattern
-  fullWidth
-              fullWidth
-              variant="outlined"
-              value={formData.pincode}
-              onChange={handleInputChange}
-              required // Added required attribute
-              error={!!formData.pinError} // Set the error prop based on the error state
-              helperText={formData.pinError}
-            />
-            <TextField
-              margin="dense"
-              id="address1"
-              label="Address 1"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={formData.address1}
-              onChange={handleInputChange}
-              required // Added required attribute
-              error={!!formData.add1Error} // Set the error prop based on the error state
-              helperText={formData.add1Error}
-            />
-            <TextField
-              margin="dense"
-              id="address2"
-              label="Address 2"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={formData.address2}
-              onChange={handleInputChange}
-              required // Added required attribute
-              error={!!formData.add2Error} // Set the error prop based on the error state
-              helperText={formData.add2Error}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Button
-              onClick={handleClose}
-              id="cancelb"
-              variant="outlined"
-              sx={{ marginRight: '40px', marginBottom: '20px' }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              id="addb"
-              variant="contained"
-              sx={{ marginRight: '85px', marginBottom: '20px' }}
-            >
-              Save
-            </Button>
-          </Box>
-        </DialogActions>
-      </Dialog>
-      <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '90px',height: '400px',overflowY: 'auto' }}>
-      <div style={{ height: '100%', width: '51%', marginBottom: '10px' }}>
-      <ThemeProvider
-            theme={(theme) =>
-              createTheme({
-                ...theme,
-                components: {
-                  MuiDataGrid: {
-                    styleOverrides: {
-                      root: {
-                        '& .MuiDataGrid-colCellTitle': {
-                          padding: '0.5rem 1rem', // Increase spacing between columns
-                        },
-                      },
-                    },
-                  },
-                },
-              })
-            }
-          >
-            <StyledDataGrid rows={rows} columns={columns} pageSize={10} autoHeight />
-          </ThemeProvider>
-        
-      </div>
+            </Menu>
+                
+                </div>
+        </Grid>
+         </div>
+      
+
+      <main>
+        <section id="booking-overview">
+          <div style={{ marginBottom: '6rem' }}>
+          
+          </div>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={3}>
+              <Paper sx={{ padding: '1.7rem' }}>
+                <Typography variant="h5">Total spend on Hotels</Typography>
+                <Typography variant="body1">Rs.10,442.0</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Paper sx={{ padding: '1.7rem' }}>
+                <Typography variant="h5">Average Booking Window</Typography>
+                <Typography variant="body1">$150</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Paper sx={{ padding: '1.7rem' }}>
+                <Typography variant="h5">Average Daily Rate</Typography>
+                <Typography variant="body1">4 nights</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Paper sx={{ padding: '1.7rem' }}>
+                <Typography variant="h5">Average Length of Stay</Typography>
+                <Typography variant="body1">7 days</Typography>
+              </Paper>
+            </Grid>
+            {/* Add more metrics as needed */}
+          </Grid>
+     
+          <Grid container spacing={2} style={{ padding: '1rem' }}>
+  <Grid item xs={12}>
+    <Paper style={{ height: '100%' }}>
+      <CardContent>
+        <Typography variant="h6">Total Spend</Typography>
+        <canvas ref={barChartRef} width="400" height="110" style={{ maxWidth: '100%' }} />
+      </CardContent>
+    </Paper>
+  </Grid>
+  <Grid item xs={12} sm={6} md={3.5}>
+  <Paper style={{ height: '100%', maxHeight: '330px' }}>
+    <CardContent>
+      <Typography variant="h6">Spend by Hotel Category</Typography>
+      <canvas ref={chartRef} width="200" height="200" style={{ maxWidth: '100%' }} />
+      <Box sx={{ marginTop: '1rem' }}>
+        <Typography variant="body1">Budget: 80.00%</Typography>
+        <LinearProgress variant="determinate" value={80} 
+         sx={{
+          height: '26px', // Adjust the height of the progress bar
+          borderRadius: '12px', // Adjust the border radius of the progress bar
+          backgroundColor: '#e0e0e0', // Change the background color of the progress bar
+          '& .MuiLinearProgress-bar': {
+            backgroundColor: '#5745f7', // Change the color of the progress bar
+          },
+        }}
+        />
       </Box>
-    </div>
-    <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={2000} // Adjust the duration as needed
-        onClose={handleSnackbarClose}
-        message="Invoice saved!"
-      />
+    </CardContent>
+  </Paper>
+</Grid>
+
+  <Grid item xs={12} sm={6} md={4}>
+    <Paper style={{ height: '100%' }}>
+      <CardContent>
+        <Typography variant="h6">Spend by Cities</Typography>
+        <canvas ref={chartRef} width="200" height="200" style={{ maxWidth: '100%' }} />
+      </CardContent>
+    </Paper>
+  </Grid>
+  
+</Grid>
+
+       
+
+
+           
+
+        </section>
+      </main>
+
+      <footer>{/* Add your footer content here */}</footer>
     </div>
   );
-}
+};
+
+export default InsightsDashboard;
